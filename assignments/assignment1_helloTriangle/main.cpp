@@ -77,15 +77,59 @@ int main() {
 	glBindVertexArray(vao);
 	//Define position attribute (3 floats)
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (const void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (const void*)0);
 	glEnableVertexAttribArray(0);
+	
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (const void*)(sizeof(float) * 3));
+	glEnableVertexAttribArray(1);
+
+	unsigned int createShader(GLenum shaderType, const char* sourceCode);
+
+	unsigned int createShaderProgram(const char* vertexShaderSource, const char* fragmentShaderSource);
+
+	vertexShader = createShader(GL_VERTEX_SHADER, vertexShaderSource);
+	unsigned int fragmentShader = createShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+
+	unsigned int shaderProgram = glCreateProgram();
+	//Attach each stage
+	glAttachShader(shaderProgram, vertexShader);
+	//glAttachShader(shaderProgram, geometryShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	//Link all the stages together
+	glLinkProgram(shaderProgram);
 
 
+	//The linked program now contains our compiled code, so we can delete these intermediate objects
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+
+	unsigned int createVAO(float* vertexData, int numVertices);
+
+	unsigned int shader = createShaderProgram(vertexShaderSource, fragmentShaderSource);
+	unsigned int vao = createVAO(vertices, 3);
+
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+
+	if (!success) {
+		char infoLog[512];
+		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+		printf("Failed to link shader program: %s", infoLog);
+	}
+	//The linked program now contains our compiled code, so we can delete these intermediate objects
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glBindVertexArray(vao);
+
+		glUseProgram(shaderProgram);
+
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
 		glfwSwapBuffers(window);
 	}
 	printf("Shutting down...");
