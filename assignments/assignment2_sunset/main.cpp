@@ -24,24 +24,6 @@ float vertices[9] = {
 	 0.0,  0.5, 0.0 
 };
 
-const char* vertexShaderSource = R"(
-	#version 450
-	layout(location = 0) in vec3 vPos;
-	void main(){
-		gl_Position = vec4(vPos,1.0);
-	}
-)";
-
-const char* fragmentShaderSource = R"(
-	#version 450
-	out vec4 FragColor;
-	uniform vec3 _Color;
-	uniform float _Brightness;
-	void main(){
-		FragColor = vec4(_Color * _Brightness,1.0);
-	}
-)";
-
 float triangleColor[3] = { 1.0f, 0.5f, 0.0f };
 float triangleBrightness = 1.0f;
 bool showImGUIDemoWindow = true;
@@ -52,6 +34,14 @@ int main() {
 		printf("GLFW failed to init!");
 		return 1;
 	}
+
+	std::string vertexShaderSource = ianLib::loadShaderSourceFromFile("assets/vertexShader.vert");
+	std::string fragmentShaderSource = ianLib::loadShaderSourceFromFile("assets/fragmentShader.frag");
+
+	unsigned int shader = createShaderProgram(vertexShaderSource.c_str(), fragmentShaderSource.c_str());
+
+	shader.use();
+	shader.setInt("_MyFloat", myFloat);
 
 	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Hello Triangle", NULL, NULL);
 	if (window == NULL) {
@@ -72,7 +62,6 @@ int main() {
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
-	unsigned int shader = createShaderProgram(vertexShaderSource, fragmentShaderSource);
 	unsigned int vao = createVAO(vertices, 3);
 
 	glUseProgram(shader);
